@@ -95,7 +95,7 @@ N = data['beetles'].to_numpy()
 
 N_0=N[0]
 K = 1200
-r = .2
+r = .6
 theta = [r,K]
 
 
@@ -118,7 +118,7 @@ N = data['beetles'].to_numpy()
 
 N_0=N[0]
 K = 1200
-r = .17
+r = .3
 theta = [r,K]
 maxiter = 20
 
@@ -131,19 +131,90 @@ print()
 print('Newton-Raphson Method')
 for i in range(maxiter):
     print("r: %.3f, K: %d" %(theta[0],np.round(theta[1])))
+#    print('grad: ', grad)
+#    print('hessian: ', H)
     theta = theta-inv(H)@grad
     grad = np.array([dLdr(N,N_0,theta[1],theta[0],t),dLdK(N,N_0,theta[1],theta[0],t)])
     H = np.array([[L_rr(N,N_0,theta[1],theta[0],t),L_rk(N,N_0,theta[1],theta[0],t)],\
                    [L_rk(N,N_0,theta[1],theta[0],t),L_kk(N,N_0,theta[1],theta[0],t)]])
 
+    
+#part C: extra
+sigma=1
+K=1200
+N0=2
+r=.2
 
+def dldr(N,N0,r,K,t,sigma):
+    l = []
+    for i in range(N.size):
+        f1 = -(1/sigma**2)*(np.log(N[i])-np.log(K)-np.log(N0)+np.log(N0+(K-N0)*np.exp(-r*t[i])))
+        f2 = (-t[i]*(K-N0)*np.exp(-r*t[i]))/(N0+(K-N0)*np.exp(-r*t[i]))
+        l.append(f1*f2)
+    return np.asarray(l).reshape(N.size,1)
 
+def dldK(N,N0,r,K,t,sigma):
+        f1
+    
+    
+"""
+Problem 02: From example 4.2
+"""
+def ENcc(nc,pc,pi,pt):
+    return (nc*pc**2)/(pc**2+2*pc*pi+2*pc*pt)
 
+def ENci(nc,pc,pi,pt):
+    return (2*nc*pc*pi)/(pc**2+2*pc*pi+2*pc*pt)
 
+def ENct(nc,pc,pi,pt):
+    return (2*nc*pc*pt)/(pc**2+2*pc*pi+2*pc*pt)
 
+def ENii(ni,pi,pt):
+    return (ni*pi**2)/(pi**2+2*pi*pt)
 
+def ENit(ni,pi,pt):
+    return (2*ni*pi*pt)/(pi**2+2*pi*pt)
 
+def p_c(ncc,nci,nct):
+    return (2*ncc+nci+nct)/(2*622)
 
+def p_i(nii,nit,nci):
+    return (2*nii+nit+nci)/(2*622)
+
+def p_t(nit,nct,ntt):
+    return (2*ntt+nct+nit)/(2*622)
+
+nc = 85; ni = 196; nt = ntt = 341
+n = nc + ni +nt
+pc = pi = pt = .333333
+
+t=0
+print()
+for i in range(20):
+    #E step
+    
+    foo  = [pc,pi]
+    ncc = ENcc(nc,pc,pi,pt)
+    nci = ENci(nc,pc,pi,pt)
+    nct = ENct(nc,pc,pi,pt)
+    nii = ENii(ni,pi,pt)
+    nit = ENit(ni,pi,pt)
+    #Mstep
+    pc = p_c(ncc,nci,nct)
+    pi = p_i(nii,nit,nci)
+    pt = p_t(nit,nct,ntt)
+    
+    dc = abs((pc-.07084)/(foo[0]-.07084))**2
+    di = abs((pi-.18874)/(foo[1]-.18874))**2
+    
+    print(t)
+    print(pc)
+    print(pi)
+    print(pt)
+    print('Dc: ', dc)
+    print('Di: ', di)
+    print()
+    t+=1
 
 
 
