@@ -105,6 +105,7 @@ x = N-N_t(N_0,K,r,t)
 maxiter = 12
 
 #Implement Gauss Newton Method
+print()
 print('Gauss-Newton Method')
 for i in range(maxiter):
     print("r: %.3f, K: %d" %(theta[0],np.round(theta[1])))
