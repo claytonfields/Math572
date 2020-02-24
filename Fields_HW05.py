@@ -8,7 +8,7 @@ Created on Sat Feb 15 13:06:44 2020
 
 import numpy as np
 import pandas as pd
-from scipy.linalg import inv
+from scipy.linalg import inv, norm
 from numpy import *
 import sympy as sp
 from sympy import Matrix
@@ -259,8 +259,8 @@ for i in range(10):
     print(pc)
     print(pi)
     print(pt)
-    print('Dc: ', dc)
-    print('Di: ', di)
+#    print('Dc: ', dc)
+#    print('Di: ', di)
     print()
     k+=1
 
