@@ -136,6 +136,7 @@ def dLdk(N,N0,K,r,t):
 t = data['days'].to_numpy()
 N = data['beetles'].to_numpy()
 
+print()
 
 N_0=2
 K = 900

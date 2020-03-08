@@ -12,7 +12,7 @@ from numpy.linalg import inv
 from numpy.linalg import multi_dot
 import matplotlib.pyplot as plt
 import scipy.stats as stat
-
+import sympy as sp
 """
 Problem 1: From example 2.5
 """
