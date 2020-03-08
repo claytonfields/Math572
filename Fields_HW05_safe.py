@@ -8,17 +8,18 @@ Created on Sat Feb 15 13:06:44 2020
 
 import numpy as np
 import pandas as pd
-from scipy.linalg import inv, norm
+from scipy.linalg import inv
 from numpy import *
 import sympy as sp
 from sympy import Matrix
 import matplotlib.pyplot as plt
 
 
+
 def N_t(N_0,K,r,t):
     return (K*N_0)/(N_0 + (K-N_0)*np.exp(-r*t))
 
-#Functions for part a
+
 def dNdt(N_0,K,r,t):
     return r*N - N.T@N*(r/K)
 
@@ -30,7 +31,7 @@ def dNdK (N_0,K,r,t):
     n = t.size
     return ((N_0**2*np.exp(r*t)*(np.exp(r*t)-1))/(K+N_0*(np.exp(r*t)-1))**2).reshape(n,1)
 
-#Functions for part b
+
 def LSE(N,N_0,K,r,t):
     return ((N-N_t(N_0,K,r,t))**2).sum()
 
@@ -54,6 +55,7 @@ def L_kk(N,N_0,K,r,t):
     term1 = (4*N_0**2*N*exp(r*t)*(exp(r*t)-1))/(K+N_0*(exp(r*t)-1))**3
     term2 = (2*N_0**3*exp(2*r*t)*(exp(r*t)-1)*(-2*K+N_0*exp(r*t)-N_0))/(K+N_0*exp(r*t)-N_0)**4
     return term1.sum() + term2.sum()
+    
 
 def L_rk(N,N_0,K,r,t):
     term1 = (-2*N_0**2*t*N*exp(r*t)*(2*K*exp(r*t)-K-N_0*exp(r*t)+N_0))/(K+N_0*(exp(r*t)-1))**3
@@ -78,7 +80,6 @@ x = N-N_t(N_0,K,r,t)
 maxiter = 12
 
 #Implement Gauss Newton Method
-print()
 print('Gauss-Newton Method')
 for i in range(maxiter):
     print("r: %.3f, K: %d" %(theta[0],np.round(theta[1])))
@@ -142,8 +143,6 @@ def Logd2r2(N,N0,K,r,t):
 def Logd2drdk(N,N0,K,r,t):
     return (N0*t*exp(r*t))/(K+N0*exp(r*t)-N0)**2
     
-
-#part C: extra
 def dQdk(N,N0,K,r,t):
     return 2*(((N0*(exp(r*t)-1)*(log(N)-log(N_t(N_0,K,r,t))))/(K*(K+N0*exp(r*t)-N0))).sum())
 
@@ -213,45 +212,28 @@ def ENcc(nc,pc,pi,pt):
 def ENci(nc,pc,pi,pt):
     return (2*nc*pc*pi)/(pc**2+2*pc*pi+2*pc*pt)
 
-#sigma=1
-#K=1200
-#N0=2
-#r=.2
+def ENct(nc,pc,pi,pt):
+    return (2*nc*pc*pt)/(pc**2+2*pc*pi+2*pc*pt)
 
-#symbols = sp.symbols
-#r, t, K, N, N0 = symbols('r t K N N0')
-#
-#LSE = (sp.log(N)-sp.log((K*N0)/(N0 + (K-N0)*sp.exp(-r*t))))**2
-#dLdr = sp.diff(LSE,r,1)
-#dldK = sp.diff(LSE,K,1)
+def ENii(ni,pi,pt):
+    return (ni*pi**2)/(pi**2+2*pi*pt)
 
+def ENit(ni,pi,pt):
+    return (2*ni*pi*pt)/(pi**2+2*pi*pt)
 
-def dLdr(N,N0,K,r,t):
-    x=-2*t*(K - N0)*(log(N) - log(K*N0/(N0 + (K - N0)*exp(-r*t))))*exp(-r*t)/(N0 + (K - N0)*exp(-r*t))
-    return x.reshape(10,1)
-    
-def dLdk(N,N0,K,r,t):
-    x=-2*(N0 + (K - N0)*exp(-r*t))*(-K*N0*exp(-r*t)/(N0 + (K - N0)*exp(-r*t))**2 + N0/(N0 + (K - N0)*exp(-r*t)))*(log(N) - log(K*N0/(N0 + (K - N0)*exp(-r*t))))/(K*N0)
-    return x.reshape(10,1)
-t = data['days'].to_numpy()
-N = data['beetles'].to_numpy()
+def p_c(ncc,nci,nct):
+    return (2*ncc+nci+nct)/(2*622)
 
-print()
+def p_i(nii,nit,nci):
+    return (2*nii+nit+nci)/(2*622)
 
-N_0=2
-K = 900
-r = .15
-theta = [r,K]
-A = np.hstack((dLdr(N,N_0,K,r,t),dLdk(N,N_0,K,r,t)))
-x = log(N)-log(N_t(N_0,K,r,t))
+def p_t(nit,nct,ntt):
+    return (2*ntt+nct+nit)/(2*622)
 
-print()
-print('C: Gauss-Newton Method')
-for i in range(20):
-    print("r: %.3f, K: %d" %(theta[0],np.round(theta[1])))
-    theta = theta+inv(A.T@A)@(A.T@x)
-    A = np.hstack((dLdr(N,N_0,theta[1],theta[0],t).reshape(10,1), dLdk(N,N_0,theta[1],theta[0],t).reshape(10,1)))
-    x = log(N)-log(N_t(N_0,theta[1],theta[0],t))
+nc = 85; ni = 196; nt = ntt = 341
+n = nc + ni +nt
+pc = pi = pt = .333333
+
 k=0
 pcl = [pc]
 pil = [pi]
@@ -277,8 +259,8 @@ for i in range(10):
     print(pc)
     print(pi)
     print(pt)
-#    print('Dc: ', dc)
-#    print('Di: ', di)
+    print('Dc: ', dc)
+    print('Di: ', di)
     print()
     k+=1
 
@@ -291,4 +273,3 @@ for i in range(9):
 
 
     
-
