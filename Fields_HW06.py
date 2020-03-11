@@ -34,7 +34,7 @@ def E(x,pi,l1,l2):
     b = (1 - pi)*poisson.pmf(x,l1)+pi*poisson.pmf(x,l2)
     return a/b
 
-maxiter = 1000
+maxiter = 10
 pi = .1
 l1 = 2
 l2 = 2
@@ -66,57 +66,86 @@ data = pd.read_csv('data_mvnorm2mix.csv',sep=',',header=None).to_numpy()
 
 def pihat(z):
     n = z.size
-    return np.sum(z/n)
+    return np.sum(z)/n
 
 def mu1hat(z,x):
     n = z.size
     l = []
     for i in range(n):
-        l.append(((1-z[i])*x[i])/(n-np.sum(z[i])))
-    return np.array(l).sum(axis=0).reshape(2,1)
+        l.append(((1-z[i])*x[i].T))
+    num = np.sum(l,axis=0).reshape(2,1)
+    den = (n-np.sum(z))
+    return num/den
 
 def mu2hat(z,x):
     n = z.size
     l = []
     for i in  range(n):
-        l.append((z[i]*x[i])/z[i])
-    return np.array(l).sum(axis=0).reshape(2,1)
+        l.append((z[i]*x[i].T))
+    num = (np.sum(l,axis=0).reshape(2,1))
+    den = np.sum(z)
+    return num/den
 
 def sig1hat(z,x,mu1):
     n= z.size
     l = []
     for i in range(n):
-        l.append(((1-z[i])*(x[i]-mu1)@(x[i]-mu1).T)/(n-z[i]))
-    return np.array(l).sum(axis=0)
+        l.append(((1-z[i])*(x[i].reshape(2,1)-mu1.reshape(2,1))@(x[i].reshape(2,1)-mu1).T))
+    num = np.sum(l,axis=0)
+    den = (n-np.sum(z))
+    return num/den
 
 def sig2hat(z,x,mu2):
     n = z.size
     l = []
     for i in range(n):
-        l.append((z[i]*(x[i]-mu2)@(x[i]-mu2).T)/z[i])
-    return np.array(l).sum(axis=0)
+        l.append((z[i]*(x[i].reshape(2,1)-mu2)@(x[i].reshape(2,1)-mu2).T))
+    num = np.array(l).sum(axis=0)
+    den = np.sum(z)
+    return num/den
 
 
 
-def fx(z,x,pi,mu1,mu2,sig1,sig2):
-    return (1-pi)*multivariate_normal.pdf(x,mean = mu1.reshape(2,),cov=sig1)+\
-        pi*multivariate_normal.pdf(x,mean = mu2.reshape(2,),cov=sig2)
+def fx(x,pi,mu1,mu2,sig1,sig2):
+    term1 = (1-pi)*multivariate_normal.pdf(x,mean = mu1.reshape(2,),cov=sig1)
+    term2 =  pi*multivariate_normal.pdf(x,mean = mu2.reshape(-1,),cov=sig2)
+    return term1 + term2
+       
         
-def Ez(z,x,pi,mu1,mu2,sig1,sig2):
-    return pi*multivariate_normal.pdf(x,mean = mu2.reshape(2,),cov=sig2)/fx(z,x,pi,mu1,mu2,sig1,sig2)
+def Ez(x,pi,mu1,mu2,sig1,sig2):
+    return pi*multivariate_normal.pdf(x,mean = mu2.reshape(-1,),cov=sig2)/fx(x,pi,mu1,mu2,sig1,sig2)
 
-maxiter = 100
-pi = .8
-mu1 = np.array([[1.5],[2.5]])
-mu2 = np.array([[1.5],[2.5]])
-sig1 = np.array([[3.5,4.5],[.5,.5]])
-sig2 =  np.array([[3.5,4.5],[.5,.5]])
+def L(data,pi,mu1,mu2,sig1,sig2):
+    n = z.size
+    l = []
+    for i in range(n):
+        term1 = (1-z[i])*np.log(multivariate_normal.pdf(data[i],mean = mu1.reshape(-1,),cov=sig1))
+        term2 = z[i]*np.log(multivariate_normal.pdf(data[i],mean = mu2.reshape(-1,),cov=sig2))
+        term3 = (1-z[i])*np.log(1-pi)+z[i]*np.log(pi)
+        l.append(term1+term2+term3)
+    return np.sum(l)
+        
+maxiter = 25
+pi = .6
+mu1 = np.array([[1],[2]])
+mu2 = np.array([[2],[4]])
+sig1 = np.array([[2,1],[3,8]])
+sig2 =  np.array([[1,-1],[-1,6]])
+loglist = []
 
 for i in range(maxiter):
     print("pi: ",pi,"mu1: ", mu1,"mu2: ", mu2)
-    z = Ez(z,data,pi,mu1,mu2,sig1,sig2)
+#    print("pi: ",pi,"sig1: ", sig1,"sig2: ", sig2)
+    z = Ez(data,pi,mu1,mu2,sig1,sig2)
+    z = z.reshape(800,1)
     pi = pihat(z)
     mu1 = mu1hat(z,data)
     mu2 = mu2hat(z,data)
     sig1 = sig1hat(z,data,mu1)
     sig2 = sig2hat(z,data,mu2)
+    loglist.append(L(data,pi,mu1,mu2,sig1,sig2))
+ 
+domain = np.linspace(1,25,25)
+plt.figure()
+plt.plot(domain,loglist)
+
