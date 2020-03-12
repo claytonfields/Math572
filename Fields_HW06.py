@@ -9,6 +9,7 @@ Created on Sat Mar  7 14:38:54 2020
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from scipy.stats import poisson, relfreq, multivariate_normal
 
 x = np.vstack((np.zeros((162,1)),np.ones((267,1)),2*np.ones((271,1)),
@@ -148,4 +149,50 @@ for i in range(maxiter):
 domain = np.linspace(1,25,25)
 plt.figure()
 plt.plot(domain,loglist)
+plt.title("Loglikelihood vs iteration")
+
+#Part C
+def dis1(x,mu1,sig1):
+    return multivariate_normal.pdf(x,mean = mu1.reshape(2,),cov=sig1)
+
+def dis2(x,mu2,sig2):
+    return multivariate_normal.pdf(x,mean = mu2.reshape(-1,),cov=sig2)
+
+x1b1list = []
+x1b2list = []
+x2b1list = []
+x2b2list = []
+
+for i in range(800):
+    if dis1(data[i],mu1,sig1)>dis2(data[i],mu2,sig2):
+        x1b1list.append(data[i,0])
+        x2b1list.append(data[i,1])
+    else:
+        x1b2list.append(data[i,0])
+        x2b2list.append(data[i,1])
+plt.figure()
+plt.scatter(x1b1list,x2b1list)
+plt.scatter(x1b2list,x2b2list)
+plt.xlabel("x1")
+plt.ylabel("x2")
+plt.legend(("Distribution 1","Distribution 2"))
+plt.title("Observation Classification")
+
+
+#Part D
+xmin  = ymin =  -5
+xmax = ymax = 5
+xx,yy = np.meshgrid(np.linspace(xmin,xmax,100),np.linspace(ymin,ymax,100))
+z = np.zeros((100,100))
+for i in range(100):
+    for j in range(100):
+        temp1 = xx[i,j]
+        temp2 = yy[i,j]
+        xystack = np.hstack((temp1,temp2))
+        z[i,j] = fx(xystack,pi,mu1,mu2,sig1,sig2)
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+ax.plot_surface(xx,yy,z)
+plt.title('Surface plot of fitted function')
+#plt.plot_surface(xx,yy,z)
 
