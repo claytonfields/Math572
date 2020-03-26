@@ -8,7 +8,9 @@ Created on Sat Mar 21 11:33:24 2020
 
 import numpy as np
 from scipy.stats import norm,uniform, poisson,lognorm
+from scipy import integrate
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 def slash(x):
     if x==0:
@@ -71,30 +73,46 @@ Problem 2
 x = np.array([8,3,4,3,1,7,2,6,2,7])
 
 def f(_lambda):
-    return lognorm.pdf(_lambda,.25,loc=4)
+    return lognorm.pdf(_lambda,s=.5,scale=4)
 
 def L(_lambda,x):
-    return np.log(np.prod(poisson.pmf(x,_lambda)))
+    l = []
+    for x_i in x:
+        l.append(poisson.pmf(x_i,_lambda))
+    return np.prod(l)
 
-lvals = lognorm.rvs(.25,loc=4,size=1000)
+lvals = lognorm.rvs(s=.5,scale=4,size=100000)
 denom = []
 for l_i in lvals:
-    denom.append(f(l_i)/L(l_i,x))
+    denom.append(L(l_i,x))
 denom = np.sum(denom)
 
 def w3(_lambda,denom):
-    return (f(_lambda)/L(_lambda,x))/denom
+    return (L(_lambda,x))/denom
 
 wvals3 = []
 for l_i in lvals:
     wvals3.append(w3(l_i,denom))
-print(sum(wvals3))
+
     
 xvals3 = np.random.choice(lvals,size=5000,replace=True,p=wvals3)
 plt.figure()
-plt.hist(xvals3,density=True)
-domain = np.linspace(0,20,500)
-plt.plot(domain,L(domain,x)/L(4.3,x))
+plt.hist(xvals3,density=True, bins = 36,label="data")
+sns.distplot(xvals3,hist=False, kde=True, label="kde")
+domain = np.linspace(2,7,500)
+
+
+l = []
+for i in range(domain.size):
+    l.append(L(domain[i],x)*f(domain[i]))
+scale =  integrate.simps(l,domain)
+l = (1/scale)*np.array(l)
+plt.plot(domain,l,"--",label="true pdf")
+plt.legend()
+plt.title("Problem 2")
+
+print("The estimated mean of the posterior dist. is: ", xvals3.mean())
+print("The estimated sd of the posterior dist. is: ", xvals3.std())
 
 
 
