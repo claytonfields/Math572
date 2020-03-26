@@ -26,7 +26,11 @@ def q(z):
 
 def e(z):
     return np.exp(-z**2/2)
+
 np.seterr(all="ignore")
+
+
+
 accepted = []
 k=0
 while len(accepted)<5000:
@@ -37,6 +41,7 @@ while len(accepted)<5000:
         accepted.append(t(Z))
     k+=1
     
+
 
 
 print("The acceptance ratio for problem 1 is: ",5000/k)
@@ -57,6 +62,18 @@ plt.title("Problem 1: Historgram and Density Curves")
 
 
 
+print(5000/k)
+plt.hist(accepted, density=True)
+xx = np.linspace(0,12,100)
+plt.plot(xx,st.gamma.pdf(xx,r))
+sns.distplot(accepted,kde=True,hist=False)
+plt.figure()
+xx = np.linspace(-3,3,100)
+plt.plot(xx,q(xx),'r--',linewidth=2)
+plt.plot(xx,e(xx))
+#xx = np.linspace(0,12,5000)
+#sns.kdeplot(xx,accepted)
+
 
 """
 Problem 02
@@ -68,13 +85,17 @@ def q2(x):
 def e2(x):
     return 1.5*st.gamma.pdf(x,2,scale=2)
 
+
 ##Problem 02 Plot01
+
 plt.figure()
 xx = np.linspace(0,20,200)
 plt.plot(xx,q2(xx))
 plt.plot(xx,1.5*st.gamma.pdf(xx,2,scale=2))
+
 plt.legend(["target","envelope"])
 plt.title("Problem 2: Unnormalized Density")
+
 plt.figure()
 #zz = f(xx)- 1.5*st.gamma.pdf(xx,2,scale=2)
 accepted2 = []
@@ -86,6 +107,7 @@ while len(accepted2)<5000:
         accepted2.append(Y)
     k+=1
 
+
 print("The acceptance ratio for problem 2 is: ",5000/k)
 ##Problem 02 Plot02
 domain = np.linspace(0,20,500)
@@ -94,3 +116,9 @@ sns.distplot(accepted2,kde=True,hist=False,label="data")
 plt.plot(domain,q2(domain))
 plt.title("Problem 2: Historgram and Density Curves")
 plt.legend(["kde","true pdf"])
+print(5000/k)
+domain = np.linspace(0,20,500)
+plt.hist(accepted2,density=True)
+sns.distplot(accepted2,kde=True,hist=False)
+plt.plot(domain,q2(domain))
+
